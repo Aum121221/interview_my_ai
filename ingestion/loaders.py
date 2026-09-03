@@ -2,6 +2,7 @@ from pathlib import Path
 import frontmatter
 import pymupdf
 
+
 def load_markdown(path: Path):
     post = frontmatter.load(path)
 
@@ -44,13 +45,16 @@ def load_python(path: Path):
 
 def load_pdf(path: Path):
     document = pymupdf.open(path)
+
     pages = []
 
-    for page in document:
-        text = page.get_text()
+    for page_number, page in enumerate(document, start=1):
+        text = page.get_text().strip()
 
-        if text.strip():
-            pages.append(text)
+        if text:
+            pages.append(
+                f"[Page {page_number}]\n{text}"
+            )
 
     document.close()
 
