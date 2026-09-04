@@ -1,7 +1,21 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+pytest-cache-files-*/
 .env
 data/*
 !.gitkeep
 .streamlit/secrets.toml
+
+config/source_map.json
+
+packed_codebase.txt
+pack_codebase.py
+
+# Local/private configuration and generated knowledge
+config/source_map.json
+.streamlit/secrets.toml
+data/knowledge.jsonl
+packed_codebase.txt
+pack_codebase.py

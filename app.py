@@ -1,16 +1,31 @@
+# app.py
+
+# Imports
 import streamlit as st
 
+from agent.factory import create_candidate_agent
+from ui.interview import run_interview_ui
 
-st.set_page_config(
-    page_title="Interview My AI",
-    page_icon="🤖",
-    layout="wide",
-)
 
-st.title("Interview My AI")
+# Session
+def get_candidate_agent():
+    """Return the candidate agent for the current session."""
+    if "candidate_agent" not in st.session_state:
+        st.session_state.candidate_agent = (
+            create_candidate_agent()
+        )
 
-st.write(
-    "AI-powered personal portfolio — development in progress."
-)
+    return st.session_state.candidate_agent
 
-st.info("Stage 1: Local knowledge foundation")
+
+# Application
+def run_application():
+    """Assemble and run the Interview My AI application."""
+    agent = get_candidate_agent()
+
+    run_interview_ui(agent)
+
+
+# Run
+if __name__ == "__main__":
+    run_application()

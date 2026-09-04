@@ -1,97 +1,116 @@
+# ingestion/processor.py
+
+# Imports
 import hashlib
 import re
+from pathlib import Path
 
 
+# Text Processing
 def clean_text(text: str) -> str:
-    # Remove citation artifacts
-    text = re.sub(r"\[cite_start\]", "", text)
-    text = re.sub(r"\[cite:\s*[^\]]*\]", "", text)
+    """Clean common extraction artifacts and normalize whitespace."""
+    if not text:
+        return ""
 
-    # Remove null characters
     text = text.replace("\x00", " ")
 
-    # Fix common missing spaces caused by PDF/text extraction
-    text = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", text)
+    text = re.sub(
+        r"\[cite_start\]",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
 
-    # Normalize spaces/tabs
-    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(
+        r"\[cite:\s*[^\]]*\]",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
 
-    # Normalize blank lines
-    text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
+    text = re.sub(
+        r"(?<=[a-z])(?=[A-Z])",
+        " ",
+        text,
+    )
+
+    text = re.sub(
+        r"[ \t]+",
+        " ",
+        text,
+    )
+
+    text = re.sub(
+        r"\n{3,}",
+        "\n\n",
+        text,
+    )
 
     return text.strip()
 
 
-def classify_document(document):
-    path = document["path"].lower()
-    title = document["title"].lower()
+# Document Classification
+def classify_document(path: Path) -> str:
+    """Classify a source document using its path and extension."""
+    path_text = str(path).lower()
 
-    if document["type"] == "code":
-        category = "technical_implementation"
+    if "github" in path_text:
+        return "github"
 
-    elif "linkedin" in path:
-        category = "professional"
+    if "linkedin" in path_text:
+        return "linkedin"
 
-    elif "github" in path:
-        category = "technical"
+    if "project" in path_text:
+        return "project"
 
-    elif "project" in path:
-        category = "project"
+    if path.suffix.lower() == ".pdf":
+        return "pdf"
 
-    elif "ai lab" in path:
-        category = "academic_ai"
+    if path.suffix.lower() == ".py":
+        return "code"
 
-    elif any(
-        word in title
-        for word in [
-            "roadmap",
-            "overview",
-            "profile",
-            "resume",
-            "about",
-        ]
-    ):
-        category = "candidate_profile"
-
-    else:
-        category = "academic"
-
-    return category
+    return "document"
 
 
-def make_chunks(text: str, max_chars: int = 1800):
-    paragraphs = [
-        p.strip()
-        for p in text.split("\n\n")
-        if p.strip()
-    ]
+# Chunking
+def make_chunks(
+    text: str,
+    chunk_size: int = 1200,
+    overlap: int = 200,
+) -> list[str]:
+    """Split text into overlapping chunks."""
+    if not text:
+        return []
+
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be greater than zero.")
+
+    if overlap < 0 or overlap >= chunk_size:
+        raise ValueError(
+            "overlap must be non-negative and smaller than chunk_size."
+        )
 
     chunks = []
-    current = ""
+    start = 0
+    step = chunk_size - overlap
 
-    for paragraph in paragraphs:
+    while start < len(text):
+        end = min(start + chunk_size, len(text))
+        chunk = text[start:end].strip()
 
-        if len(current) + len(paragraph) + 2 <= max_chars:
-            current = (
-                f"{current}\n\n{paragraph}"
-                if current
-                else paragraph
-            )
-        else:
-            if current:
-                chunks.append(current)
+        if chunk:
+            chunks.append(chunk)
 
-            current = paragraph
-
-    if current:
-        chunks.append(current)
+        start += step
 
     return chunks
 
 
-def make_id(path, chunk_index, content):
-    raw = f"{path}:{chunk_index}:{content}".encode(
-        "utf-8"
-    )
+# IDs
+def make_id(path: Path, chunk_index: int) -> str:
+    """Create a deterministic ID for a source chunk."""
+    source = f"{path.resolve()}::{chunk_index}"
 
-    return hashlib.sha256(raw).hexdigest()[:16]
+    return hashlib.sha256(
+        source.encode("utf-8")
+    ).hexdigest()

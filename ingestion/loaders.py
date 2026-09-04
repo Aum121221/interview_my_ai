@@ -1,86 +1,42 @@
+# ingestion/loaders.py
+
+# Imports
 from pathlib import Path
-import frontmatter
-import pymupdf
+
+import fitz
 
 
-def load_markdown(path: Path):
-    post = frontmatter.load(path)
-
-    return {
-        "path": str(path),
-        "type": "markdown",
-        "title": path.stem,
-        "content": post.content,
-        "metadata": dict(post.metadata),
-    }
+# Text Files
+def load_text_file(path: Path) -> str:
+    """Read a text-based source file."""
+    return path.read_text(
+        encoding="utf-8",
+        errors="ignore",
+    )
 
 
-def load_text(path: Path):
-    return {
-        "path": str(path),
-        "type": "text",
-        "title": path.stem,
-        "content": path.read_text(
-            encoding="utf-8",
-            errors="ignore",
-        ),
-        "metadata": {},
-    }
-
-
-def load_python(path: Path):
-    return {
-        "path": str(path),
-        "type": "code",
-        "title": path.stem,
-        "content": path.read_text(
-            encoding="utf-8",
-            errors="ignore",
-        ),
-        "metadata": {
-            "language": "python",
-        },
-    }
-
-
-def load_pdf(path: Path):
-    document = pymupdf.open(path)
-
+# PDF Files
+def load_pdf_file(path: Path) -> str:
+    """Extract readable text from a PDF."""
     pages = []
 
-    for page_number, page in enumerate(document, start=1):
-        text = page.get_text().strip()
+    with fitz.open(path) as document:
+        for page in document:
+            pages.append(page.get_text())
 
-        if text:
-            pages.append(
-                f"[Page {page_number}]\n{text}"
-            )
-
-    document.close()
-
-    return {
-        "path": str(path),
-        "type": "pdf",
-        "title": path.stem,
-        "content": "\n\n".join(pages),
-        "metadata": {},
-    }
+    return "\n".join(pages)
 
 
-def load_file(path: Path):
+# File Loading
+def load_file(path: Path) -> str:
+    """Load a supported source file as raw text."""
     extension = path.suffix.lower()
 
-    if extension == ".md":
-        return load_markdown(path)
-
-    if extension == ".txt":
-        return load_text(path)
-
-    if extension == ".py":
-        return load_python(path)
+    if extension in {".md", ".txt", ".py"}:
+        return load_text_file(path)
 
     if extension == ".pdf":
-        return load_pdf(path)
+        return load_pdf_file(path)
 
     raise ValueError(
         f"Unsupported file type: {extension}"

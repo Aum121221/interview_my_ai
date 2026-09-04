@@ -1,0 +1,17 @@
+{
+  "vault_root": "C:\\PATH\\TO\\OBSIDIAN",
+  "include": [
+    "YOUR\\SOURCE\\FOLDER"
+  ],
+  "exclude": [
+    ".obsidian",
+    "ROUGHWORK",
+    "personal"
+  ],
+  "extensions": [
+    ".md",
+    ".pdf",
+    ".txt",
+    ".py"
+  ]
+}
