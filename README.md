@@ -61,24 +61,23 @@ This project serves as a **living AI portfolio**, showcasing:
 - My ability to design advanced retrieval pipelines.  
 - Integration of modern AI frameworks with backend services.  
 - Professional presentation of technical depth in an interview‑style format.
-## 📂 Repository Layout
+### 📂 Repository Layout
 
-C:\OBSIDIAN\interview_my_ai
-├── .git/                     # Git version control
-├── .streamlit/               # Streamlit config files
-├── .venv/                    # Virtual environment
-├── __pycache__/              # Python cache
-├── agent/                    # Agent factory, tools, instructions
-├── config/                   # Settings, source map, secrets
-├── data/                     # Candidate knowledge base (knowledge.jsonl)
-├── ingestion/                # Knowledge ingestion pipeline
-├── scripts/                  # Helper scripts
-├── tests/                    # Pytest suite
-├── ui/                       # Interview interface components
-├── .gitignore                # Git ignore rules
-├── app.py                    # Streamlit entrypoint
-├── pack_codebase.example.py  # Example packing script
+```text
+C:\OBSIDIAN\interview_my_ai\
+├── agent/                  # Agent factory, tools, and interview instructions
+├── config/                 # Settings, source map, secrets management
+├── data/                   # Candidate knowledge base (knowledge.jsonl)
+├── ingestion/              # Knowledge ingestion pipeline (scanner, loaders, processor)
+├── scripts/                # Helper scripts (e.g., packing codebase)
+├── .streamlit/             # Streamlit configuration files
+├── ui/                     # Streamlit interview interface components
+├── tests/                  # Pytest suite for validation
+├── .venv/                  # Virtual environment
+├── app.py                  # Streamlit entrypoint
+├── .gitignore              # Git ignore rules
+├── pack_codebase.example.py# Example packing script
 ├── packed_codebase.example.txt # Example packed output
-├── pytest.ini                # Pytest configuration
-└── requirements.txt          # Dependencies
-
+├── pytest.ini              # Pytest configuration
+└── requirements.txt        # Project dependencies
+```
