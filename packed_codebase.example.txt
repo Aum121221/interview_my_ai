@@ -1,0 +1,16 @@
+﻿========================================
+FILE: README.example.md
+========================================
+
+# Example Project
+
+This is a synthetic example of the generated packed-codebase format.
+It contains no candidate data, credentials, local paths, or private files.
+
+
+========================================
+FILE: example.py
+========================================
+
+def hello():
+    return "Hello from the example project."
