@@ -1,12 +1,12 @@
 # config/settings.py
 
-# Imports
 from pathlib import Path
 
 import streamlit as st
 
 
 # Paths
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 VAULT_ROOT = Path(r"C:\OBSIDIAN")
@@ -25,16 +25,18 @@ KNOWLEDGE_FILE = (
 
 
 # Application Configuration
+
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 DEFAULT_MODEL_TEMPERATURE = 0.2
 
 DEFAULT_MODEL_MAX_TOKENS = 700
 
-DEFAULT_MAX_AGENT_STEPS = 5
+DEFAULT_MAX_AGENT_STEPS = 3
 
 
 # API Keys
+
 def get_openrouter_model() -> str:
     """Return the OpenRouter model ID."""
     return st.secrets["OPENROUTER_MODEL"]
@@ -43,11 +45,6 @@ def get_openrouter_model() -> str:
 def get_openrouter_api_key() -> str:
     """Return the OpenRouter API key."""
     return st.secrets["OPENROUTER_API_KEY"]
-
-
-def get_gemini_api_key() -> str:
-    """Return the Gemini API key."""
-    return st.secrets["GEMINI_API_KEY"]
 
 
 def get_supabase_url() -> str:
@@ -61,12 +58,14 @@ def get_supabase_key() -> str:
 
 
 # Embeddings
-EMBEDDING_MODEL = "gemini-embedding-2"
 
-EMBEDDING_DIMENSION = 768
+EMBEDDING_MODEL = "BAAI/bge-m3"
+
+EMBEDDING_DIMENSION = 1024
 
 
 # Retrieval
-DEFAULT_TOP_K = 5
+
+DEFAULT_TOP_K = 3
 
 DEFAULT_SIMILARITY_THRESHOLD = 0.25

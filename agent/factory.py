@@ -1,7 +1,6 @@
 # agent/factory.py
 
-# Imports
-from smolagents import OpenAIModel
+from smolagents import OpenAIServerModel
 
 from agent.core import create_agent
 from agent.instructions import CANDIDATE_INSTRUCTIONS
@@ -17,16 +16,15 @@ from config.settings import (
 
 
 # Model
-def create_model() -> OpenAIModel:
+def create_model() -> OpenAIServerModel:
     """Create the language model used by the candidate agent."""
-    return OpenAIModel(
+    return OpenAIServerModel(
         model_id=get_openrouter_model(),
         api_base=OPENROUTER_BASE_URL,
         api_key=get_openrouter_api_key(),
         temperature=DEFAULT_MODEL_TEMPERATURE,
         max_tokens=DEFAULT_MODEL_MAX_TOKENS,
     )
-
 
 # Tools
 def create_tools(retriever=None) -> list[CandidateKnowledgeSearchTool]:

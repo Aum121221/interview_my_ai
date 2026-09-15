@@ -16,11 +16,7 @@ CONFIG_PATH = (
 # Configuration Loading
 def load_config() -> dict:
     """Load the source scanning configuration."""
-    with open(
-        CONFIG_PATH,
-        "r",
-        encoding="utf-8",
-    ) as file:
+    with open(CONFIG_PATH, "r", encoding="utf-8-sig") as file:
         return json.load(file)
 
 

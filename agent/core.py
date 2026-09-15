@@ -1,7 +1,8 @@
 # agent/core.py
 
 # Imports
-from smolagents import ToolCallingAgent
+from smolagents import ToolCallingAgent, OpenAIModel
+
 
 
 # Agent

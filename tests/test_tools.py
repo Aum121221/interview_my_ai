@@ -11,14 +11,13 @@ class FakeRetriever:
         self.error = error
         self.calls = []
 
-    def search(self, **kwargs):
+    def __call__(self, **kwargs):
         self.calls.append(kwargs)
 
         if self.error:
             raise self.error
 
         return self.results
-
 
 def test_candidate_search_tool_formats_evidence():
     retriever = FakeRetriever(

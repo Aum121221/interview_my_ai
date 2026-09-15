@@ -1,14 +1,13 @@
 # agent/tools.py
 
-# Imports
-# pyrefly: ignore [missing-import]
+import os
+
 from smolagents import Tool
 
 import config.settings as settings
-from ingestion.vector_store import VectorKnowledgeStore
+from ingestion.retrieval import search_knowledge
 
 
-# Candidate Knowledge Search
 class CandidateKnowledgeSearchTool(Tool):
     """Search the candidate knowledge base for relevant evidence."""
 
@@ -35,16 +34,15 @@ class CandidateKnowledgeSearchTool(Tool):
 
     def __init__(self, retriever=None):
         super().__init__()
-        self.retriever = retriever or VectorKnowledgeStore()
+        self.retriever = retriever or search_knowledge
 
-    # Search
     def forward(self, query: str) -> str:
         """Retrieve compact candidate evidence for the agent."""
         if not query or not query.strip():
             return "No search query was provided."
 
         try:
-            results = self.retriever.search(
+            results = self.retriever(
                 query=query.strip(),
                 top_k=settings.DEFAULT_TOP_K,
                 threshold=settings.DEFAULT_SIMILARITY_THRESHOLD,
@@ -57,53 +55,59 @@ class CandidateKnowledgeSearchTool(Tool):
 
         return self.format_results(results)
 
-    # Output
     @staticmethod
     def format_results(results: list[dict]) -> str:
-        """Convert retrieval results into Karpathy-isolated Markdown evidence with Willison Delimiter-Locked format contracts."""
+        """Format retrieval results as compact candidate evidence."""
         if not results:
             return (
                 "No relevant candidate information was found in the "
                 "available knowledge base."
             )
 
-        # Karpathy Pattern: Immutable vs Mutable Data Split
-        # Isolate inventory summary record to prevent dynamic code chunks from corrupting context
-        inventory_items = [
-            r for r in results
-            if "inventory" in r.get("filename", "").lower()
-            or r.get("document_type") == "inventory"
-            or "inventory" in r.get("id", "").lower()
-        ]
-        if inventory_items:
-            results = inventory_items
-
         evidence = []
-        is_inventory_evidence = False
+        evidence_number = 0
+        has_inventory = False
 
-        for index, result in enumerate(results, start=1):
+        for result in results:
             raw_content = result.get("content", "").strip()
 
             if not raw_content:
                 continue
 
             content = " ".join(raw_content.split())
-            source = result.get("filename") or (
-                result.get("source", "").split("\\")[-1]
-            ) or "unknown"
 
-            if "inventory" in source.lower() or "inventory" in result.get("document_type", ""):
-                is_inventory_evidence = True
-                # Willison Pattern: Delimiter-Locked Structural Container
+            source = (
+                result.get("filename")
+                or os.path.basename(result.get("source", ""))
+                or "unknown"
+            )
+
+            is_inventory = (
+                "inventory" in source.lower()
+                or "inventory"
+                in result.get("document_type", "").lower()
+                or "inventory" in result.get("id", "").lower()
+            )
+
+            if is_inventory:
+                has_inventory = True
                 evidence.append(
-                    f"<candidate_inventory_data>\n{content}\n</candidate_inventory_data>"
+                    f"<candidate_inventory_data>\n"
+                    f"{content}\n"
+                    f"</candidate_inventory_data>"
                 )
-            else:
-                if len(content) > 400:
-                    content = content[:400] + "..."
-                evidence.append(
-                    f"### Evidence {index} (Source: `{source}`)\n{content}"
-                )
+                continue
+
+            if len(content) > 400:
+                content = content[:400] + "..."
+
+            evidence_number += 1
+
+            evidence.append(
+                f"### Evidence {evidence_number} "
+                f"(Source: `{source}`)\n"
+                f"{content}"
+            )
 
         if not evidence:
             return (
@@ -111,14 +115,15 @@ class CandidateKnowledgeSearchTool(Tool):
                 "was returned."
             )
 
-        output_payload = "\n\n".join(evidence)
+        output = "\n\n".join(evidence)
 
-        # Willison Pattern: Decoupled Suffix Directive at Payload Boundary
-        if is_inventory_evidence:
-            output_payload += (
+        if has_inventory:
+            output += (
                 "\n\n---\n"
-                "[OUTPUT FORMAT DIRECTIVE]: Candidate evidence contains a complete project/file inventory in <candidate_inventory_data>. "
-                "Render ALL items as a clean, untruncated bulleted list. Do not omit any items. Do not collapse into a prose paragraph."
+                "[OUTPUT FORMAT DIRECTIVE]: The evidence contains "
+                "candidate inventory data in <candidate_inventory_data>. "
+                "Render all inventory items as a clean bulleted list "
+                "without omitting items."
             )
 
-        return output_payload
+        return output
