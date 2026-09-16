@@ -2,8 +2,8 @@ import argparse
 import json
 from pathlib import Path
 
-from ingestion.bge_m3 import create_document_embedding
-from ingestion.vector_store import get_supabase_client
+from ai_knowledge.bge_m3 import create_document_embedding
+from ai_knowledge.vector_store import get_supabase_client
 
 from config.settings import KNOWLEDGE_FILE
 

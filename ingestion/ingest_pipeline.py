@@ -4,10 +4,10 @@ from ingestion.scanner import scan_sources
 from ingestion.loaders import load_file
 from ingestion.processor import clean_text, classify_document, make_chunks, make_id
 from ingestion.build_knowledge import build_knowledge
-from ingestion.bge_m3 import create_document_embedding
-from ingestion.bm25 import tokenize
+from ai_knowledge.bge_m3 import create_document_embedding
+from ai_knowledge.bm25 import tokenize
 from ingestion.ingest_vectors import embed_records
-from ingestion.vector_store import get_supabase_client
+from ai_knowledge.vector_store import get_supabase_client
 
 
 def safe_run(name, func, *args):

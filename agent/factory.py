@@ -1,5 +1,7 @@
 # agent/factory.py
 
+from typing import Callable
+
 from smolagents import OpenAIServerModel
 
 from agent.core import create_agent
@@ -18,6 +20,7 @@ from config.settings import (
 # Model
 def create_model() -> OpenAIServerModel:
     """Create the language model used by the candidate agent."""
+
     return OpenAIServerModel(
         model_id=get_openrouter_model(),
         api_base=OPENROUTER_BASE_URL,
@@ -26,20 +29,38 @@ def create_model() -> OpenAIServerModel:
         max_tokens=DEFAULT_MODEL_MAX_TOKENS,
     )
 
+
 # Tools
-def create_tools(retriever=None) -> list[CandidateKnowledgeSearchTool]:
+def create_tools(
+    retriever=None,
+    trace_callback: Callable | None = None,
+) -> list[CandidateKnowledgeSearchTool]:
     """Create the tools available to the candidate agent."""
+
     return [
-        CandidateKnowledgeSearchTool(retriever=retriever),
+        CandidateKnowledgeSearchTool(
+            retriever=retriever,
+            trace_callback=trace_callback,
+        ),
     ]
 
 
 # Agent
-def create_candidate_agent(model=None, tools=None, instructions=None):
+def create_candidate_agent(
+    model=None,
+    tools=None,
+    instructions=None,
+    trace_callback: Callable | None = None,
+):
     """Create the Interview My AI candidate agent."""
+
     return create_agent(
         model=create_model() if model is None else model,
-        tools=create_tools() if tools is None else tools,
+        tools=(
+            create_tools(trace_callback=trace_callback)
+            if tools is None
+            else tools
+        ),
         instructions=(
             CANDIDATE_INSTRUCTIONS
             if instructions is None
